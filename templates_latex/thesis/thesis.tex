@@ -1,97 +1,74 @@
-% TODO: there are some things in the DL.cls file that should probably be defined elsewhere, like the page before the abstract and other small things. I will get to it as soon as I understand what needs to be changed.
-
-%This determines the document class and uses the things defined in the DL files (included in this repo)
+% Note that you need to use LuaLaTeX for this to even compile
 \documentclass[11pt,a4paper]{DL}
 
-% Packages that we will be using
-% If you think we're missing an important one, just add it here and send a pull request
-\usepackage[hidelinks]{hyperref}
-\usepackage{numprint}
-\usepackage{multirow} % anforanden
-%\usepackage{paralist} % poligraph
-\usepackage{listingsutf8} %poligraph
-% the package above should be replaced with e.g. the minted library
-\usepackage{latexsym} %poligraph
-\usepackage{graphicx} %poligraph
-\usepackage{longtable} % tables that can extend over a page
-\usepackage[section]{placeins} % to keep floats within sections
-\usepackage{datetime} % for defining date variables
-\npthousandsep{,}
+
+% This lets us offload the preamble so our working space is cleaner
+\usepackage{import}
+
+% Write the paths to your folders here
+\newcommand{\PreamblePath}{./00_Preamble}  % We don't want the preamble to clutter everything
+\newcommand{\PartsPath}{./01_Parts}
+
+
+% These are packages that Ricardo uses all of the time and that he considers useful to add by default
+% Feel free to modify it if it doesn't suit your needs
+% You can find the latest version of this file here:
+% https://github.com/rimusa/useful_stuff/blob/main/latex/packages.tex
+\import{\PreamblePath}{boilerplate-packages}
+
+
+% Additional packages should be added either below or in the imported file
+\import{\PreamblePath}{imported-packages}
+
 
 % Special variables for your thesis
-\newcommand\VarPhdName{Student McPerson}   % Your name goes here
-\title{Fancy Title}
-\subtitle{Subtitle that actually explains what the thesis is about}
-\newdate{VarPubDate}{19}{04}{2024}  % The date of your thesis defense
-
-% You need to ask someone for what these values will be for your thesis
-\DLno{XXXX}
-\ISBN{XXXX}
-
-% This should point to your bib file(s)
-\addbibresource{thesis.bib}
+% You'll need to modify this file to set your name, the title of the thesis, etc.
+\import{\PreamblePath}{thesis-variables}
 
 
+% Import your bib files here
+\import{\PreamblePath}{bib-files}
 
-\author{\VarPhdName}
-\pubyear{\getdateyear{VarPubDate}}
 
+% Here we finally begin the document
 \begin{document}
+
+% Everything in the thesis lives in wrapper files, found in the 01_Parts folder
+% They should let you work on individual parts of your thesis without having to think of the others
+% They assume your thesis is roughly separarated as follows:
+%  - Title Pages
+%  - Preface
+%  - Index
+%  - Kappa
+%  - Papers
+%  - Appendices
+%  - Bibliography
 
 \maketitle
 \frontmatter
 
-% Everything before the actual thesis is in chapters/00_preface.tex
-\include{chapters/preface}
+\input{01_Parts/preface}
 
 \tableofcontents
 \mainmatter
 
+\input{01_Parts/kappa}
 
-\part{Introduction and overview of the thesis work} 
-% It is generated as a separate page with only the title
-\label{part:kappa}
+\input{01_Parts/papers}
 
-% This section should provide a general introduction to your work
-% The chapters here are a suggestion, feel free to reorganize and rename things around
-
-\chapter{Introduction}
-\label{introduction}
-\input{chapters/introduction}
-
-\chapter{Background}
-\label{background}
-\input{chapters/background}
-
-\chapter{Resources}
-\label{resources}
-\input{chapters/resources.tex}
-
-\chapter{Methods}
-\label{methods}
-\input{chapters/methods.tex}
-
-\chapter{Discussion}
-\label{discussion}
-\input{chapters/discussion}
-
-\chapter{Conclusion}
-\label{conclusion}
-\input{chapters/conclusion}
+\input{01_Parts/appendices}
 
 
+% We print the bibliography *after* the appendices
+% This bit of code comes from Felix
+\defbibnote{referencedoc}{\markboth{References}{References}}
+\cleardoublepage
+\addcontentsline{toc}{chapter}{\numberline{}\refname}
+\markboth{\refname}{\refname}
+\extramarks{\refname}{\refname}
+\chptitle{\refname}
+\printbibliography[title={References}, prenote=referencedoc]
 
-
-\part{Second Part of the Thesis}
-% Feel free to add extra sections as needed
-
-\chapter{Example Paper}
-\input{papers/example}
-
-
-\printbibliography
-
-\appendix
-\input{chapters/appendix.tex}
 \backmatter
+
 \end{document}

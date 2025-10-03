@@ -6,6 +6,10 @@
 % - built on top of mouton.cls by Lars Borin 2008-03-25:
 % - added BibTeX bibliography style (CL.bst) 2008-03-05
 % - adapted to work with XeLaTex and biblatex by Lars and Stian 2022-05-02
+% - got rid of most uses of def 2025-10-02
+%   see the second circle of LaTeX Hell:
+%   https://dabacon.org/pontiff/2012/03/12/the-nine-circles-of-latex-hell/
+% - Ricardo adapted the class so that we don't have to touch it and risk breaking stuff! 2025-10
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %--------------------------------------------------------------------------------
 \LoadClass[11pt,twoside]{book}
@@ -21,6 +25,10 @@
     backend=biber,
     style=langsci-unified,
     citestyle=langsci-unified,
+	maxbibnames=99,
+	uniquename=true,
+	mincrossrefs=99,
+	maxcitenames=2,
     url=false,
   ]{biblatex}
 
@@ -78,7 +86,7 @@
     \cleardoublepage
   \@mainmatterfalse
   \pagenumbering{roman}
-  \def\textfloatsep{25pt}}
+  \renewcommand{\textfloatsep}{25pt}}
 
 \renewcommand{\bibname}{References}
 \newcommand{\references}[1]{%
@@ -88,7 +96,7 @@
    \bibliography{#1}}
 
 % no running heads on blank pages:
-\def\cleardoublepage{%
+\renewcommand{\cleardoublepage}{%
     \clearpage{\ps@empty\if@twoside\ifodd\c@page\else
     \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}}
 
@@ -106,7 +114,7 @@
 \DeclareCaptionLabelSeparator{cq}{:\quad}
 \captionsetup{labelfont={small,rm,it},textfont={small,rm},format=hang,labelsep=cq}
 
-\def\listoftables{\typeout{Warning: You must not use \string\listoftables\space !}%
+\renewcommand{\listoftables}{\typeout{Warning: You must not use \string\listoftables\space !}%
                    \vskip2ex \texttt{Warning: You must not use
                    \string\listoftables!}\vskip2ex}
 
@@ -125,7 +133,7 @@
 
 %\renewcommand\theappendix     {\@Alph{c@appendix}}
 % no period at end of counter in heading
-\def\@seccntformat#1{\csname the#1\endcsname\quad}
+\renewcommand{\@seccntformat}[1]{\csname the#1\endcsname\quad}
 
 \@removefromreset{footnote}{chapter}
 %%% Bortkommenterad FO 081029
@@ -135,12 +143,35 @@
 \@removefromreset{ExNo}{chapter}
 \@removefromreset{equation}{chapter}
 
-\def\subtitle#1{\gdef\@subtitle{#1}}
-\def\@subtitle{}
-\def\pubyear#1{\gdef\pub@year{#1}}
-\def\DLno#1{\gdef\@DL{#1}}
-\def\ISBN#1{\gdef\@ISBN{#1}}
-\def\maketitle{
+\newcommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+\newcommand{\@subtitle{}}
+
+% Some variables to make things easier to deal with
+
+% Series Variables
+\newcommand{\pubname}[1]{\gdef\@pubname{#1}}
+\newcommand{\ISSN}[1]{\gdef\@ISSN{#1}}
+\newcommand{\DLEditorName}[1]{\gdef\@EditorName{#1}}
+\newcommand{\DLprinter}[1]{\gdef\@DLprinter{#1}}
+\newcommand{\DLCoverDesigner}[1]{\gdef\@DLCoverDesigner{#1}}
+\newcommand{\DLURL}[1]{\gdef\@DLURL{\url{#1}}}
+
+% Current book variables
+\newcommand{\pubyear}[1]{\gdef\pub@year{#1}}
+\newcommand{\DLno}[1]{\gdef\@DL{#1}}
+\newcommand{\ISBN}[1]{\gdef\@ISBN{#1}}
+\newcommand{\pubtypesetter}[1]{\gdef\@pubtypesetter{#1}}
+\newcommand{\CoverArtist}[1]{\gdef\@CoverArtist{#1}}
+\newcommand{\AuthorPhotographer}[1]{\gdef\@AuthorPhotographer{#1}}
+\newcommand{\BookURL}[1]{\gdef\@BookURL{\url{#1}}}
+
+% Author variables
+\newcommand{\CandidatesResearchGroup}[1]{\gdef\@CandidatesResearchGroup{#1}}
+\newcommand{\CandidatesDepartment}[1]{\gdef\@CandidatesDepartment{#1}}
+\newcommand{\CandidatesUniversity}[1]{\gdef\@CandidatesUniversity{#1}}
+\newcommand{\pubplace}[1]{\gdef\@pubplace{#1}}
+
+\renewcommand{\maketitle}{
 \begingroup
   \parindent=\z@
   \pretolerance=10000
@@ -152,17 +183,16 @@
     {\bfseries \@title\par}\normalsize}
   \newpage\thispagestyle{empty}
   {\sf\huge%
-    Data linguistica\par
+    \@pubname\par
     \normalsize
-    $<$https://www.gu.se/svenska-spraket/data-linguistica$>$\par
+    $<$\@DLURL$>$\par
     \vskip\baselineskip%
-    Editor: Lars Borin\par
+    Editor: \@EditorName\par
     \vskip\baselineskip%
-    Spr{\aa}kbanken \par %and the\par 
-%    Natural Language Processing Research Unit\par
+    \@CandidatesResearchGroup\par
 %    \vskip 0.5\baselineskip
-    Department of Swedish\par
-    University of Gothenburg\par
+    \@CandidatesDepartment \par
+    \@CandidatesUniversity\par
     \vskip\baselineskip%
     \Large \@DL\ $\bullet$ \pub@year\par\normalsize}
 
@@ -177,36 +207,37 @@
    \vskip 1cm                % Vertical space after subtitle.
   \fi
   \vfill
-  {\sf\large\raggedleft Gothenburg \pub@year\par\normalsize}
+  {\sf\large\raggedleft \@pubplace\ \pub@year\par\normalsize}
   \newpage\thispagestyle{empty}
   {\sf\normalsize%
-    Data linguistica 1337\par
+    \@pubname\ \@DL\par
     ISBN \@ISBN\par
-    ISSN 0347-948X\par
-    E-publication $<$http://hdl.handle.net/2077/55895$>$ \par
+    ISSN \@ISSN\par
+    E-publication $<$\@BookURL$>$ \par
     \vskip\baselineskip
-    Printed in Sweden by\par
-    Who Knows \pub@year\par
+    Printed in Sweden by\ %\par
+    \@DLprinter\ \pub@year\par
     \vskip\baselineskip
-    Typeset in {\LaTeXe} by the author
+    Typeset in {\LaTeXe} by \@pubtypesetter
     \vskip\baselineskip
-    Cover design by Picasso\par
+    Cover design by \@DLCoverDesigner\par
     \vskip 0.5\baselineskip
-    Front cover illustration by Matisse\par
+    Front cover illustration generated by \@CoverArtist\par
     %{\em XX}\par
     %by Yy Zz \copyright\par
     \vskip 0.5\baselineskip
-    Author photo on back cover by Luis Buñuel\par}
+    Author photo on back cover by \@AuthorPhotographer\par}
   \newpage\thispagestyle{empty}
 \endgroup
  \let\maketitle\relax
  \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax}
 
 % short titles for running head //LB 2007-12-14
-\def\chptitle#1{%
-  \fancyhead[RO]{\normalsize{\itshape{#1}}\hspace{1em}\thepage}}
-\def\sectitle#1{%
-  \fancyhead[LE]{\normalsize\thepage\hspace{1em}\itshape\thesection\hspace{0.5em}#1}}
+\newcommand{\chptitle}[1]{%
+  \fancyhead[LE]{\normalsize{\thepage\hspace{1em}\itshape{#1}}}}
+%  \fancyhead[RO]{\normalsize{\itshape{#1}}\hspace{1em}\thepage}}
+\newcommand{\sectitle}[1]{%
+  \fancyhead[RO]{\normalsize\thepage\hspace{1em}\itshape\thesection\hspace{0.5em}#1}}
 
 %% Chapter headings //LB 2008-03-27
 \newlength{\K@pN}
@@ -231,7 +262,7 @@
 \cline{2-2}
 \end{tabular}}}
 
-\def\@makechapterhead#1{%
+\renewcommand{\@makechapterhead}[1]{%
   \vspace*{20\p@}%
   {\parindent \z@ \raggedright \normalfont
     \ifnum \c@secnumdepth >\m@ne
@@ -239,7 +270,7 @@
     \else \nskapitel{#1} \fi 
     \vskip 36\p@
   }}
-\def\@makeschapterhead#1{%
+\renewcommand{\@makeschapterhead}[1]{%
   \vspace*{20\p@}%
   {\parindent \z@ \raggedright \normalfont
     \nskapitel{#1}
@@ -273,6 +304,9 @@
    \addcontentsline{toc}{chapter}{\numberline{}#1}%
    \markboth{#1}{#1}%
    \extramarks{#1}{#1}}
+
+\newenvironment{dedication}%
+{{\cleardoublepage}{}}
 
 \newenvironment{sammanfattning}%
 {\@beginning{Sammanfattning}{}}
@@ -337,7 +371,7 @@
     \endgroup
   \fi}
 
-\def\l@part#1#2{\addpenalty{\@secpenalty}
+\renewcommand{\l@part}[2]{\addpenalty{\@secpenalty}
    \addvspace{2.0em plus 1pt}  % space above part line
    \begingroup
    \setlength\@tempdima{2em}       % width of box holding part number, used by
@@ -359,7 +393,7 @@
 \renewcommand*\l@subparagraph{\@dottedtocline{5}{0em}{4em}}
 
 %====
-\def\l@pt#1{\addpenalty{\@secpenalty}
+\newcommand{\l@pt}[1]{\addpenalty{\@secpenalty}
   \addvspace{2.0em plus 1pt}
   \begingroup
   \setlength\@tempdima{2em}
@@ -372,12 +406,12 @@
     \nobreak
   \endgroup}
 
-\renewcommand\appendix{\par
- \setcounter{chapter}{0}%
- \setcounter{section}{0}%
- \gdef\@chapapp{\appendixname}%
- \gdef\thechapter{\@Alph\c@chapter}%
- \addtocontents{toc}{\l@pt{Appendices}}}
+% \renewcommand\appendix{\par
+%  \setcounter{chapter}{0}%
+%  \setcounter{section}{0}%
+%  \gdef\@chapapp{\appendixname}%
+%  \gdef\thechapter{\@Alph\c@chapter}%
+%  \addtocontents{toc}{\l@pt{Appendices}}}
 %==== 
 
 %% 2008-03-25 //LB
@@ -389,5 +423,10 @@
 %\setlength\bibsep{2pt plus 1pt}
 %\setlength\bibhang{2em}
 %\setlength{\textfloatsep}{2\baselineskip}
+
+\newcounter{pchp}
+\newcommand{\pchbegin}{\gdef\thechapter{\@arabic\c@chapter\@alph\c@pchp}\setcounter{pchp}{0}\refstepcounter{chapter}}
+\newcommand{\pchend}{\addtocounter{chapter}{-1}\refstepcounter{chapter}\gdef\thechapter{\@arabic\c@chapter}}
+\newcommand{\pchapter}[1]{\addtocounter{chapter}{-2}\refstepcounter{chapter}\addtocounter{pchp}{1}\chapter{#1}\chptitle{#1}}
 
 \endinput
